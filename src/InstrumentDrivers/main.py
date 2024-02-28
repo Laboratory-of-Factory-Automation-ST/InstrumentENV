@@ -4,43 +4,42 @@ Created on Thu Feb 15 12:45:09 2024
 
 @author: marek novotny
 """
-
-import InstrumentDiscovery
-import CPX400DP
+from InstrumentDiscovery import InstrumentDiscovery
+from InstrumentConnection import InstrumentConnection
+from CPX400DP import CPX400DP
 import time
 
 """ Instrument discovery section """
-ID = InstrumentDiscovery.InstrumentDiscovery()
+ID = InstrumentDiscovery()
 ID.print_instruments()
-supply = CPX400DP.CPX400DP(*ID.get_connection(1), verbose=True)
 
-""" Command execution section """
-print(supply.get_voltage(1))
-print(supply.get_voltage(2))
-supply.set_voltage(1, 12.00)
-print(supply.get_voltage(1))
+with InstrumentConnection(ID.get_instrument_address(1), ID.get_connection_handler()) as con, CPX400DP(con, True) as supply:
+   
+    """ Command execution section """
+    print(supply.get_voltage(1))
+    print(supply.get_voltage(2))
+    supply.set_voltage(1, 12.00)
+    print(supply.get_voltage(1))
 
-print(supply.get_current(1))
-print(supply.get_current(2))
-supply.set_current(1, 1.00)
+    print(supply.get_current(1))
+    print(supply.get_current(2))
+    supply.set_current(1, 1.00)
 
-print(supply.out_status(1))
-print(supply.out_status(2))
+    print(supply.out_status(1))
+    print(supply.out_status(2))
 
-supply.out_on(1)
-time.sleep(1)
-supply.out_on(2)
-time.sleep(1)
-supply.out_off(2)
-time.sleep(1)
-supply.out_off(1)
-time.sleep(1)
-print(supply.lock())
-time.sleep(1)
-print(supply.unlock())
-
-supply.disconnect()
-ID.close()
+    supply.out_on(1)
+    time.sleep(1)
+    supply.out_on(2)
+    time.sleep(1)
+    supply.out_off(2)
+    time.sleep(1)
+    supply.out_off(1)
+    time.sleep(1)
+    print(supply.lock())
+    time.sleep(1)
+    print(supply.unlock())
+    supply.release()
 
 # v = 0
 # while True:

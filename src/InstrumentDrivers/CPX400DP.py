@@ -4,21 +4,25 @@ Created on Thu Feb 15 12:26:50 2024
 
 @author: marek novotny
 """
-import time
+from InstrumentConnection import InstrumentConnection
 
 class CPX400DP:
-    def __init__(self, con_str, resources, verbose=False):
-        self.__con_str = con_str
-        self.__resources = resources
-        self.__connection = self.__resources.open_resource(self.__con_str)
+    def __init__(self, connection: InstrumentConnection, verbose=False):
+        self.__connection = connection
         self.__verbose = verbose
+
+    def __enter__(self):
+        return self
+    
+    def __exit__(self, except_type, except_val, except_trace):
+        print("-> Remote lock released")
+        self.release()
 
     def connect(self):
         self.__connection = self.__resources.open_resource(self.__con_str)
 
-    def disconnect(self):
+    def release(self):
         self.__connection.write("LOCAL")
-        self.__connection.close()
 
     def get_voltage(self, channel):
         return self.__connection.query("V" + str(channel) + "?", 1e-3)
@@ -76,9 +80,9 @@ class CPX400DP:
         for i, bit in enumerate(active_bits):
             match i:
                 case 0:
-                    print("+ Output entered voltage limit")
+                    print("+ Output reached set voltage limit")
                 case 1:
-                    print("+ Output entered current limit")
+                    print("+ Output reached set current limit")
                 case 2:
                     print("+ Overvoltage protection engaged")
                 case 3:

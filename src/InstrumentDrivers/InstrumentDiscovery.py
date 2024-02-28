@@ -5,36 +5,32 @@ Created on Mon Feb 12 16:15:53 2024
 @author: marek novotny
 """
 
-import pyvisa
+from pyvisa import ResourceManager
+from InstrumentConnection import InstrumentConnection
 
 
 class InstrumentDiscovery:
+    __resources = ResourceManager()
+
     def __init__(self):
-        self.__resources = pyvisa.ResourceManager()
         self.__discovered = self.__resources.list_resources()
 
-    def __connect(self, con_str):
-        connection = self.__resources.open_resource(con_str)
-        connection.read_termination = '\n'
-        connection.write_termination = '\n'
-        connection.baudrate = 9600
-        connection.timeout = 1000
-
-        return connection
-    
-    def close(self):
+    def __del__(self):
+        print("-> Resources successfully released")
         self.__resources.close()
 
     def print_instruments(self, verbose=False) -> None:
-        for idx, con_str in enumerate(self.__discovered):
-            connection = self.__connect(con_str)
-            try:
-                print("[" + str(idx) + "]", con_str, connection.query("*IDN?", 1e-3))
-                print("\n")
-            except:
-                if (verbose):
-                    print(con_str, "DISCOVERED RESOURCE TIMED OUT")
-            connection.close()
+        for idx, addr in enumerate(self.__discovered):
+            with InstrumentConnection(addr, self.__resources) as con:
+                try:
+                    print("[" + str(idx) + "]", addr, con.query("*IDN?", 1e-3))
+                    print("\n")
+                except:
+                    if (verbose):
+                        print(addr, "DISCOVERED RESOURCE TIMED OUT")
 
-    def get_connection(self, idx) -> tuple[str, pyvisa.ResourceManager]:
-        return (self.__discovered[idx], self.__resources)
+    def get_instrument_address(self, idx):
+        return self.__discovered[idx]
+    
+    def get_connection_handler(self):
+        return self.__resources
