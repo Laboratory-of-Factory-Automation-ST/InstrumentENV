@@ -39,7 +39,6 @@ with InstrumentConnection(ID.get_instrument_address(1), ID.get_connection_handle
     print(supply.lock())
     time.sleep(1)
     print(supply.unlock())
-    supply.release()
 
 # v = 0
 # while True:
