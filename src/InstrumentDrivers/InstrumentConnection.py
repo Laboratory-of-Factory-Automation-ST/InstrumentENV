@@ -1,4 +1,5 @@
 from pyvisa import ResourceManager
+import logging
 
 class InstrumentConnection:
     def __init__(self, address, handler: ResourceManager, baudrate = 9600, timeout = 1000, r_terminator = '\n', w_terminator = '\n'):
@@ -17,8 +18,14 @@ class InstrumentConnection:
         self.__connection.baudrate = self.__baudrate
         self.__connection.timeout = self.__timeout
 
-        return self.__connection
+        return self
 
     def __exit__(self, except_type, except_val, except_trace):
-        print("-> Connection to instrument closed")
+        logging.info("-> Connection to instrument closed")
         self.__connection.close()
+
+    def send(self, cmd):
+        self.__connection.write(cmd)
+
+    def send_query(self, query, await_time):
+        return self.__connection.query(query, await_time)

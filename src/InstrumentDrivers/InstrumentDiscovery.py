@@ -6,31 +6,37 @@ Created on Mon Feb 12 16:15:53 2024
 """
 
 from pyvisa import ResourceManager
-from InstrumentConnection import InstrumentConnection
-
+from src.InstrumentDrivers.InstrumentConnection import InstrumentConnection
+import logging
 
 class InstrumentDiscovery:
-    __resources = ResourceManager()
-
     def __init__(self):
-        self.__discovered = self.__resources.list_resources()
+        self.__resources = ResourceManager()
+        self.__discovered = list(self.__resources.list_resources())
+        self.__handshakes = dict()
+        self.get_handshakes()
 
     def __del__(self):
-        print("-> Resources successfully released")
+        logging.info("-> Resources successfully released")
         self.__resources.close()
 
-    def print_instruments(self, verbose=False) -> None:
+    @property
+    def handshakes(self):
+        return self.__handshakes
+
+    def get_handshakes(self) -> None:
         for idx, addr in enumerate(self.__discovered):
             with InstrumentConnection(addr, self.__resources) as con:
                 try:
-                    print("[" + str(idx) + "]", addr, con.query("*IDN?", 1e-3))
-                    print("\n")
+                    inst_name = con.send_query("*IDN?", 1e-3)
+                    logging.info(f"[{ str(idx) }] { addr } { inst_name }\n")
+                    self.__handshakes[addr] = inst_name
                 except:
-                    if (verbose):
-                        print(addr, "DISCOVERED RESOURCE TIMED OUT")
+                    logging.debug(f"[{ str(idx) }] { addr } DISCOVERED RESOURCE TIMED OUT\n")
 
     def get_instrument_address(self, idx):
         return self.__discovered[idx]
     
-    def get_connection_handler(self):
+    @property
+    def connection_handler(self):
         return self.__resources
