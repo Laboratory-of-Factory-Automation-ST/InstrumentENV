@@ -54,7 +54,7 @@ class GUIContent(dict):
     @classmethod
     def new_view(cls, view_name):
         if view_name in cls.__VIEWS:
-            logging.info("View with the same name exists, returning existing view.\n")
+            logging.warning("View with the same name exists, returning existing view.\n")
             return cls.__VIEWS[view_name]
         else:
             cls.__VIEWS[view_name] = list()

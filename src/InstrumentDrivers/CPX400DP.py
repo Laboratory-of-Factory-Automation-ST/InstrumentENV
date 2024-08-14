@@ -71,20 +71,20 @@ class CPX400DP(Instrument):
     def report_lim_status(self, channel):
         active_bits = self.read_lim_status_active_bits(channel)
 
-        print("OUT" + str(channel) + " Limits [")
+        logging.warning("OUT" + str(channel) + " Limits [")
         for i, bit in enumerate(active_bits):
             match i:
                 case 0:
-                    print("+ Output reached set voltage limit")
+                    logging.warning("+ Output reached set voltage limit")
                 case 1:
-                    print("+ Output reached set current limit")
+                    logging.warning("+ Output reached set current limit")
                 case 2:
-                    print("+ Overvoltage protection engaged")
+                    logging.warning("+ Overvoltage protection engaged")
                 case 3:
-                    print("+ Overcurrent protection engaged")
+                    logging.warning("+ Overcurrent protection engaged")
                 case 4:
-                    print("+ Output power limitation engaged")
+                    logging.warning("+ Output power limitation engaged")
                 case 6:
-                    print("+ Hard trip occured - perform manual reset")
-        print("]")
+                    logging.warning("+ Hard trip occured - perform manual reset")
+        logging.warning("]")
                 

@@ -1,5 +1,6 @@
 from src.InstrumentDrivers.InstrumentConnection import InstrumentConnection
 from enum import Enum
+import logging
 
 class Instrument:
 
@@ -28,6 +29,6 @@ class Instrument:
         return self
     
     def __exit__(self, except_type, except_val, except_trace):
-        print("-> Remote lock released")
+        logging.info("-> Remote lock released")
         self.stop()
         self.release()

@@ -3,6 +3,25 @@ from enum import Enum
 import sys
 from io import StringIO
 
+class Skippable(object):
+    class Skip(Exception):
+        pass
+
+    def __init__(self, value):
+        self.value = value
+    
+    def __enter__(self):
+        try:
+            return self.value.__enter__()
+        except:
+            e = self.Skip()
+            self.__exit__(type(e), e, e.__traceback__)
+    
+    def __exit__(self, except_type, except_val, except_trace):
+        if except_type is self.Skip:
+            self.value.__exit__(except_type, except_val, except_trace)
+        return True
+
 class LogConfig(type):
     class LogLevel(Enum):
         DEBUG = logging.DEBUG

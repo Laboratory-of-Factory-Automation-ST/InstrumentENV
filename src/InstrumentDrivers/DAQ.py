@@ -2,6 +2,7 @@ from __future__ import annotations
 from datetime import datetime
 from pathlib import Path
 import csv
+import logging
 
 """ 
 Basic class for creating series of acquired data
@@ -58,7 +59,7 @@ class SeriesWriter:
             
         def __enter__(self):
             if self.__dry_run:
-                print("-> Preparing unique file name")
+                logging.debug("-> Preparing unique file name")
             elif self.__filename is not None:
                 file_path = Path(self.__filename)
                 self.__filename = file_path.parent.joinpath(file_path.stem + '_' + datetime.now().strftime("%d-%m-%Y_%H-%M-%S") + file_path.suffix)
@@ -66,12 +67,12 @@ class SeriesWriter:
 
         def __exit__(self, except_type, except_val, except_trace):
             if self.__dry_run:
-                print("-> Creating data file")
+                logging.debug("-> Creating data file")
                 return
             with self.__filename.resolve().open("w", newline='') as series_file:
                 csv_w = csv.writer(series_file, delimiter=";")
                 csv_w.writerows(self.__writeable_series)
-            print("-> Report file written at " + str(self.__filename))
+            logging.info("-> Report file written at " + str(self.__filename))
 
         def write(self, series: Series):
             self.__writeable_series.append(series.header)

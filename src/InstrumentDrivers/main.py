@@ -12,21 +12,16 @@ from CPX400DP import CPX400DP
 from DMM6500 import DMM6500
 import time
 from Generic import Config
-from GUIController import GUIController as GUIC
+from Generic import Skippable
 
-Config.SET_LOGLEVEL = Config.LogLevel.DEBUG
+Config.SET_LOGLEVEL = Config.LogLevel.INFO
 
 """ Instrument discovery section """
 ID = InstrumentDiscovery()
-ID.get_handshakes()
 print(ID.handshakes)
 
-MEAS_preambule = Series("MEAS preambule")
-VDC_src_ser = Series("VDC src")
-VDC_ser = Series("VDC")
-
 # LAB SRC SWEEP
-with InstrumentConnection(ID.get_instrument_address(1), ID.connection_handler, True) as src_con,\
+with Skippable(InstrumentConnection(ID.get_instrument_address(1), ID.connection_handler, True)) as src_con,\
     CPX400DP(src_con) as src:
     src.set_voltage(2, 10)
     src.set_current(2, 0.5)
@@ -42,9 +37,12 @@ with InstrumentConnection(ID.get_instrument_address(1), ID.connection_handler, T
     time.sleep(5)
 
 # MULTIMETER TEST
-with InstrumentConnection(ID.get_instrument_address(0), ID.connection_handler) as multi_con, DMM6500(multi_con) as multi, \
-    InstrumentConnection(ID.get_instrument_address(2), ID.connection_handler) as src_con, CPX400DP(src_con) as src, \
+with Skippable(InstrumentConnection(ID.get_instrument_address(0), ID.connection_handler)) as multi_con, DMM6500(multi_con) as multi, \
+    Skippable(InstrumentConnection(ID.get_instrument_address(2), ID.connection_handler)) as src_con, CPX400DP(src_con) as src, \
     SeriesWriter(r'./src/Measurements/test.csv') as writer:
+    MEAS_preambule = Series("MEAS preambule")
+    VDC_src_ser = Series("VDC src")
+    VDC_ser = Series("VDC")
     multi.set_v_range(100)
     MEAS_preambule.add_data_point("VRange: 100V")
     src.out_on(1)

@@ -29,13 +29,16 @@ class InstrumentDiscovery:
             with InstrumentConnection(addr, self.__resources) as con:
                 try:
                     inst_name = con.send_query("*IDN?", 1e-3)
-                    logging.info(f"[{ str(idx) }] { addr } { inst_name }\n")
+                    logging.info(f"-> [{ str(idx) }] { addr } { inst_name }\n")
                     self.__handshakes[addr] = inst_name
                 except:
-                    logging.debug(f"[{ str(idx) }] { addr } DISCOVERED RESOURCE TIMED OUT\n")
+                    logging.warning(f"[{ str(idx) }] { addr } DISCOVERED RESOURCE TIMED OUT\n")
 
     def get_instrument_address(self, idx):
-        return self.__discovered[idx]
+        try:
+            return self.__discovered[idx]
+        except:
+            logging.warning("-> Instrument was not found")
     
     @property
     def connection_handler(self):
