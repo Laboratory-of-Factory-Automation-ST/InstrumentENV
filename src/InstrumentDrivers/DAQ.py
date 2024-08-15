@@ -10,19 +10,22 @@ Basic class for creating series of acquired data
 class Series:
     def __init__(self, header_name) -> None:
         self.__header = []
+        self.__header_fields = []
         self.__values = []
         self.__header.append(header_name)
     
     def __iter__(self):
-        return (val for val in self.__col(0))
+        return (val for val in self.__values)
     
     def __len__(self):
         return len(self.__values)
     
     def __add__(self, series: Series):
-        len_diff = len(series) - len(self)
-        justified_series = self.__values + [[] for _ in range(len_diff) if len_diff > 0]
-        self.__values = [row + series.values[pos:pos+1][0] for pos, row in enumerate(justified_series)]
+        len_diff_self = len(series) - len(self)
+        len_diff_series = len(self) - len(series)
+        justified_self = self.__values + [[None] for _ in range(len_diff_self) if len_diff_self > 0]
+        justified_series = series.values + [[None] for _ in range(len_diff_series) if len_diff_series > 0]
+        self.__values = [row + justified_series[pos:pos+1][0] for pos, row in enumerate(justified_self)]
         self.__header += series.header
         
         return self
@@ -43,6 +46,13 @@ class Series:
     @property
     def header(self):
         return self.__header
+    
+    @property
+    def header_fields(self):
+        return self.__header_fields
+    
+    def add_header_field(self, name, value):
+        self.__header_fields.append([name, value])
     
     def add_data_point(self, value):
         self.__values.append([value])
@@ -76,4 +86,5 @@ class SeriesWriter:
 
         def write(self, series: Series):
             self.__writeable_series.append(series.header)
+            self.__writeable_series.extend(series.header_fields)
             self.__writeable_series.extend(series)
