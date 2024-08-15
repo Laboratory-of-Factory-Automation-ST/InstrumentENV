@@ -12,7 +12,7 @@ from CPX400DP import CPX400DP
 from DMM6500 import DMM6500
 import time
 from Generic import Config
-from Generic import Skippable
+from Generic import Skippable, SkipOnExcept
 
 Config.SET_LOGLEVEL = Config.LogLevel.INFO
 
@@ -22,7 +22,7 @@ print(ID.handshakes)
 
 # LAB SRC SWEEP
 with Skippable(InstrumentConnection(ID.get_instrument_address(1), ID.connection_handler, True)) as src_con,\
-    CPX400DP(src_con) as src:
+    CPX400DP(SkipOnExcept(src_con)) as src:
     src.set_voltage(2, 10)
     src.set_current(2, 0.5)
     time.sleep(5)
@@ -37,8 +37,8 @@ with Skippable(InstrumentConnection(ID.get_instrument_address(1), ID.connection_
     time.sleep(5)
 
 # MULTIMETER TEST
-with Skippable(InstrumentConnection(ID.get_instrument_address(0), ID.connection_handler)) as multi_con, DMM6500(multi_con) as multi, \
-    Skippable(InstrumentConnection(ID.get_instrument_address(2), ID.connection_handler)) as src_con, CPX400DP(src_con) as src, \
+with Skippable(InstrumentConnection(ID.get_instrument_address(0), ID.connection_handler)) as multi_con, DMM6500(SkipOnExcept(multi_con)) as multi, \
+    Skippable(InstrumentConnection(ID.get_instrument_address(2), ID.connection_handler)) as src_con, CPX400DP(SkipOnExcept(src_con)) as src, \
     SeriesWriter(r'./src/Measurements/test.csv') as writer:
     MEAS_preambule = Series("MEAS preambule")
     VDC_src_ser = Series("VDC src")
