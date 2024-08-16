@@ -3,26 +3,43 @@ from enum import Enum
 import sys
 from io import StringIO
 
-class SkipOnExcept:
-    def __init__(self, except_context):
-        if isinstance(except_context, Exception):
-            raise except_context
-        else:
-            return except_context
-        
-class Skippable:
+class Evaluated(type):
+    def __call__(cls, *args, **kwargs):
+        obj = super(Evaluated, cls).__call__(*args, **kwargs)
+        return obj.__evaluate__()
+
+class Exceptable:
     def __init__(self, context):
         self.__context = context
+        self.__exception = None
     
     def __enter__(self):
         try:
-            return self.__context.__enter__()
+            self.__context.__enter__()
         except Exception as e:
-            return e
+            self.__exception = e
+        return self
     
     def __exit__(self, except_type, except_val, except_trace):
         self.__context.__exit__(except_type, except_val, except_trace)
         return True
+    
+    @property
+    def context(self):
+        return self.__context
+    
+    @property
+    def exception(self):
+        return self.__exception
+    
+class SkipOnExcept(metaclass=Evaluated):
+    def __init__(self, except_context: Exceptable):
+        self.__except_ctx = except_context
+        if isinstance(except_context.exception, Exception):
+            raise except_context.exception
+        
+    def __evaluate__(self):
+        return self.__except_ctx.context
 
 class LogConfig(type):
     class LogLevel(Enum):
