@@ -6,11 +6,20 @@ Created on Thu Feb 15 12:26:50 2024
 """
 from src.InstrumentDrivers.InstrumentConnection import InstrumentConnection
 from src.InstrumentDrivers.Instrument import Instrument
+from src.InstrumentDrivers.Generic import classproperty
 import logging
+import time
 
 class CPX400DP(Instrument):
-    def __init__(self, connection: InstrumentConnection):
-        super().__init__(connection, Instrument.Type.PowerSupply)
+    @classproperty
+    def default_addresses(cls):
+        instrument_refs = set()
+        instrument_refs.add("ASRL4::INSTR")
+        for ref in instrument_refs:
+            yield ref
+
+    def __init__(self, connection: InstrumentConnection, daq_reference: str = "CPX400DP"):
+        super().__init__(connection, Instrument.Type.PowerSupply, daq_reference)
 
     def release(self):
         self._connection.send("LOCAL")
@@ -23,9 +32,8 @@ class CPX400DP(Instrument):
         return self._connection.send_query("V" + str(channel) + "?", 1e-3)
 
     def set_voltage(self, channel, value):
-        # Instrument.DAQ.add_data_column('V_DC src')
-        # Instrument.DAQ.add_data_point(value)
         self._connection.send("V" + str(channel) + " " + str(value))
+        # self.daq_series.add_data_point(self.get_voltage())
 
     def get_current(self, channel):
         return self._connection.send_query("I" + str(channel) + "?", 1e-3)
@@ -87,4 +95,9 @@ class CPX400DP(Instrument):
                 case 6:
                     logging.warning("+ Hard trip occured - perform manual reset")
         logging.warning("]")
-                
+
+    def sweep_voltage(self, channel, init_val, final_val, blanking_time = 50e-3):
+        sweep_range = range(init_val * 10, final_val * 10 + 10) if init_val < final_val else reversed(range(init_val * 10, final_val * 10 + 10))
+        for i in sweep_range:
+            self.set_voltage(channel, i / 10)
+            time.sleep(blanking_time)

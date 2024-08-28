@@ -1,7 +1,17 @@
 from src.InstrumentDrivers.InstrumentConnection import InstrumentConnection
 from src.InstrumentDrivers.Instrument import Instrument
+from src.InstrumentDrivers.Generic import classproperty
 
 class DMM6500(Instrument):
+    @classproperty
+    def default_addresses(cls):
+        instrument_refs = set()
+        instrument_refs.add("0x05E6::0x6500::04612268::INSTR")
+        instrument_refs.add("0x05E6::0x6500::04612414::INSTR")
+        for ref in instrument_refs:
+            for port in range(cls.MAX_USB_PORTS):
+                yield f"USB{port}::{ref}"
+
     def __init__(self, connection: InstrumentConnection):
         super().__init__(connection, Instrument.InstrumentType.Datalogger)
 

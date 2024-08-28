@@ -12,7 +12,7 @@ from CPX400DP import CPX400DP
 from DMM6500 import DMM6500
 import time
 from Generic import Config
-from Generic import Exceptable, SkipOnExcept
+from Generic import Exceptable
 
 Config.SET_LOGLEVEL = Config.LogLevel.INFO
 
@@ -20,25 +20,29 @@ Config.SET_LOGLEVEL = Config.LogLevel.INFO
 ID = InstrumentDiscovery()
 print(ID.handshakes)
 
+# DEFAULT ADDRESS CONNECTION
+ID.default_addresses = DMM6500.default_addresses
+datalog1 = Exceptable(InstrumentConnection(ID.next_default_address, ID.connection_handler))
+datalog2 = Exceptable(InstrumentConnection(ID.next_default_address, ID.connection_handler))
+with datalog1 as con_d1, datalog2 as con_d2,\
+    DMM6500(con_d1.evaluate()) as d1, DMM6500(con_d2.evaluate()) as d2:
+    pass
+
 # LAB SRC SWEEP
 with Exceptable(InstrumentConnection(ID.get_instrument_address(1), ID.connection_handler, True)) as src_con,\
-    CPX400DP(SkipOnExcept(src_con)) as src:
+    CPX400DP(src_con.evaluate()) as src:
     src.set_voltage(2, 10)
     src.set_current(2, 0.5)
     time.sleep(5)
     src.out_on(2)
     time.sleep(5)
-    for voltage in range(100, 241, 1):
-        src.set_voltage(2, voltage/10)
-        time.sleep(50e-3)
-    for voltage in reversed(range(100, 241, 1)):
-        src.set_voltage(2, voltage/10)
-        time.sleep(50e-3)
+    src.sweep_voltage(2, 10, 24)
+    src.sweep_voltage(2, 24, 10)
     time.sleep(5)
 
 # MULTIMETER TEST
-with Exceptable(InstrumentConnection(ID.get_instrument_address(0), ID.connection_handler)) as multi_con, DMM6500(SkipOnExcept(multi_con)) as multi, \
-    Exceptable(InstrumentConnection(ID.get_instrument_address(2), ID.connection_handler)) as src_con, CPX400DP(SkipOnExcept(src_con)) as src, \
+with Exceptable(InstrumentConnection(ID.get_instrument_address(0), ID.connection_handler)) as multi_con, DMM6500(multi_con.evaluate()) as multi, \
+    Exceptable(InstrumentConnection(ID.get_instrument_address(2), ID.connection_handler)) as src_con, CPX400DP(src_con.evaluate()) as src, \
     SeriesWriter(r'./src/Measurements/test.csv') as writer:
     MEAS_preambule = Series("MEAS preambule")
     VDC_src_ser = Series("VDC src")
@@ -47,14 +51,11 @@ with Exceptable(InstrumentConnection(ID.get_instrument_address(0), ID.connection
     MEAS_preambule.add_data_point("VRange: 100V")
     src.out_on(1)
     time.sleep(1)
-    for voltage in range(21):
-        src.set_voltage(1, voltage)
-        time.sleep(1)
-        VDC_src_ser.add_data_point(voltage)
-        VDC_ser.add_data_point(multi.acquire_measurement())
+    src.sweep_voltage(1, 0, 20)
     writer.write(MEAS_preambule)
     writer.write(VDC_src_ser + VDC_ser)
 
+# CSV GENERATION TEST
 with SeriesWriter(r'./src/Measurements/debug.csv') as writer:
     MEAS_preambule = Series("MEAS preambule")
     VDC_src_ser = Series("VDC src")

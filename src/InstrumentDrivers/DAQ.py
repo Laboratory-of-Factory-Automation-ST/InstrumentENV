@@ -3,6 +3,33 @@ from datetime import datetime
 from pathlib import Path
 import csv
 import logging
+from enum import Enum, auto
+
+"""
+Enumeration of possible captured measurements 
+"""
+class DAQ:
+    class Capture:
+        class DAQEnum(Enum):
+            pass
+        
+        class AC(DAQEnum):
+            Voltage = auto()
+            Current = auto()
+            Impedance = auto()
+            Period = auto()
+            Freq = auto()
+
+        class DC(DAQEnum):
+            Voltage = auto()
+            Current = auto()
+            Resistance = auto()
+            Capacitance = auto()
+            Inductance = auto()
+            PulsePeriod = auto()
+            PulseFreq = auto()
+    
+
 
 """ 
 Basic class for creating series of acquired data
@@ -61,6 +88,9 @@ class Series:
         vals = [[row[num] for row in self.__values] for num in range(len(self.__header))]
         return dict(zip(self.__header, vals))
 
+"""
+Class for writing data series to a file in csv format
+"""
 class SeriesWriter:
         def __init__(self, filename, dry_run = False):
             self.__filename = filename

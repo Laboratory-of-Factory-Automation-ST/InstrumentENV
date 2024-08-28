@@ -1,21 +1,27 @@
 from src.InstrumentDrivers.InstrumentConnection import InstrumentConnection
-from enum import Enum
+from src.InstrumentDrivers.DAQ import Series, DAQ
+from src.InstrumentDrivers.Generic import classproperty
+from enum import Enum, auto
 import logging
 
 class Instrument:
 
     class InstrumentType(Enum):
-        Datalogger = ()
-        PowerSupply = ()
-        Scope = ()
-
+        Datalogger = auto()
+        PowerSupply = auto()
+        Scope = auto()
+    
     Type = InstrumentType
+    MAX_USB_PORTS = 5
 
-    def __init__(self, connection: InstrumentConnection, inst_type: InstrumentType):
-        if connection is None:
-            raise ValueError("InstrumentConnection was not passed to base Instrument constructor!")
+    @classproperty
+    def default_addresses(cls):
+        raise NotImplementedError("Instrument must implement 'default_addresses' property getter method")
+
+    def __init__(self, connection: InstrumentConnection, inst_type: InstrumentType, daq_ref: str = "DAQ Reference"):
         self.__connection = connection
         self.__inst_type = inst_type
+        self.__daq = {"daq_ref": Series(daq_ref)}
 
     @property
     def _connection(self):
@@ -32,3 +38,10 @@ class Instrument:
         logging.info("-> Remote lock released")
         self.stop()
         self.release()
+
+    def add_daq(self, daq_capture: DAQ.Capture):
+        match (daq_capture):
+            case DAQ.Capture.AC.Voltage:
+                pass
+            case _:
+                pass

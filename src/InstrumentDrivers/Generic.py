@@ -3,10 +3,9 @@ from enum import Enum
 import sys
 from io import StringIO
 
-class Evaluated(type):
-    def __call__(cls, *args, **kwargs):
-        obj = super(Evaluated, cls).__call__(*args, **kwargs)
-        return obj.__evaluate__()
+class classproperty(property):
+    def __get__(self, cls, owner):
+        return classmethod(self.fget).__get__(None, owner)()
 
 class Exceptable:
     def __init__(self, context):
@@ -32,14 +31,11 @@ class Exceptable:
     def exception(self):
         return self.__exception
     
-class SkipOnExcept(metaclass=Evaluated):
-    def __init__(self, except_context: Exceptable):
-        self.__except_ctx = except_context
-        if isinstance(except_context.exception, Exception):
-            raise except_context.exception
-        
-    def __evaluate__(self):
-        return self.__except_ctx.context
+    def evaluate(self):
+        if isinstance(self.exception, Exception):
+            raise self.exception
+        else:
+            return self.context
 
 class LogConfig(type):
     class LogLevel(Enum):

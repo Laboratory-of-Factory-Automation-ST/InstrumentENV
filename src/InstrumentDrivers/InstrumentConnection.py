@@ -37,4 +37,7 @@ class InstrumentConnection:
             logging.error("-> Communication with instrument was unsuccessful")
 
     def send_query(self, query, await_time):
-        return self.__connection.query(query, await_time)
+        try:
+            return self.__connection.query(query, await_time)
+        except:
+            logging.error("-> Communication with instrument was unsuccessful")
