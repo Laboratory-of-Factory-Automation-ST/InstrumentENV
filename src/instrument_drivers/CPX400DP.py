@@ -4,9 +4,9 @@ Created on Thu Feb 15 12:26:50 2024
 
 @author: marek novotny
 """
-from src.InstrumentDrivers.InstrumentConnection import InstrumentConnection
-from src.InstrumentDrivers.Instrument import Instrument
-from src.InstrumentDrivers.Generic import classproperty
+from src.instrument_drivers.InstrumentConnection import InstrumentConnection
+from src.instrument_drivers.Instrument import Instrument
+from src.instrument_drivers.generic import classproperty
 import logging
 import time
 
@@ -15,6 +15,7 @@ class CPX400DP(Instrument):
     def default_addresses(cls):
         instrument_refs = set()
         instrument_refs.add("ASRL4::INSTR")
+        instrument_refs.add("ASRL11::INSTR")
         for ref in instrument_refs:
             yield ref
 
@@ -41,13 +42,15 @@ class CPX400DP(Instrument):
     def set_current(self, channel, value):
         self._connection.send("I" + str(channel) + " " + str(value))
 
-    def out_on(self, channel):
+    def out_on(self, channel, blanking_time = 1):
+        time.sleep(blanking_time)
         self.__read_lim_status_reg_raw(channel)
         self._connection.send("OP" + str(channel) + " 1")
         logging.info("-> Switching OUT" + str(channel) + " on")
         #self.report_lim_status(channel)
 
-    def out_off(self, channel):
+    def out_off(self, channel, blanking_time = 1):
+        time.sleep(blanking_time)
         self._connection.send("OP" + str(channel) + " 0")
         logging.info("-> Switching OUT" + str(channel) + " off")
         #self.report_lim_status(channel)
@@ -96,8 +99,8 @@ class CPX400DP(Instrument):
                     logging.warning("+ Hard trip occured - perform manual reset")
         logging.warning("]")
 
-    def sweep_voltage(self, channel, init_val, final_val, blanking_time = 50e-3):
-        sweep_range = range(init_val * 10, final_val * 10 + 10) if init_val < final_val else reversed(range(init_val * 10, final_val * 10 + 10))
-        for i in sweep_range:
-            self.set_voltage(channel, i / 10)
+    def ramp_voltage(self, channel, init_val, final_val, blanking_time = 50e-3):
+        ramp_range = range(init_val * 10, final_val * 10 + 1) if init_val < final_val else reversed(range(final_val * 10, init_val * 10 + 1))
+        for i in ramp_range:
             time.sleep(blanking_time)
+            self.set_voltage(channel, i / 10)

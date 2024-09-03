@@ -10,17 +10,17 @@ Enumeration of possible captured measurements
 """
 class DAQ:
     class Capture:
-        class DAQEnum(Enum):
+        class CaptureEnum(Enum):
             pass
         
-        class AC(DAQEnum):
+        class AC(CaptureEnum):
             Voltage = auto()
             Current = auto()
             Impedance = auto()
             Period = auto()
             Freq = auto()
 
-        class DC(DAQEnum):
+        class DC(CaptureEnum):
             Voltage = auto()
             Current = auto()
             Resistance = auto()
