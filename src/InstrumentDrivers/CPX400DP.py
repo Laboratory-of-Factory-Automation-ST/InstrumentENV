@@ -15,6 +15,7 @@ class CPX400DP(Instrument):
     def default_addresses(cls):
         instrument_refs = set()
         instrument_refs.add("ASRL4::INSTR")
+        instrument_refs.add("ASRL11::INSTR")
         for ref in instrument_refs:
             yield ref
 
@@ -96,8 +97,8 @@ class CPX400DP(Instrument):
                     logging.warning("+ Hard trip occured - perform manual reset")
         logging.warning("]")
 
-    def sweep_voltage(self, channel, init_val, final_val, blanking_time = 50e-3):
-        sweep_range = range(init_val * 10, final_val * 10 + 10) if init_val < final_val else reversed(range(init_val * 10, final_val * 10 + 10))
-        for i in sweep_range:
+    def voltage_ramp(self, channel, init_val, final_val, blanking_time = 50e-3):
+        ramp_range = range(init_val * 10, final_val * 10 + 1) if init_val < final_val else reversed(range(final_val * 10, init_val * 10 + 1))
+        for i in ramp_range:
             self.set_voltage(channel, i / 10)
             time.sleep(blanking_time)

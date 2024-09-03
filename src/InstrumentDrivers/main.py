@@ -36,8 +36,8 @@ with Exceptable(InstrumentConnection(ID.get_instrument_address(1), ID.connection
     time.sleep(5)
     src.out_on(2)
     time.sleep(5)
-    src.sweep_voltage(2, 10, 24)
-    src.sweep_voltage(2, 24, 10)
+    src.voltage_ramp(2, 10, 24)
+    src.voltage_ramp(2, 24, 10)
     time.sleep(5)
 
 # MULTIMETER TEST
@@ -51,7 +51,7 @@ with Exceptable(InstrumentConnection(ID.get_instrument_address(0), ID.connection
     MEAS_preambule.add_data_point("VRange: 100V")
     src.out_on(1)
     time.sleep(1)
-    src.sweep_voltage(1, 0, 20)
+    src.voltage_ramp(1, 0, 20)
     writer.write(MEAS_preambule)
     writer.write(VDC_src_ser + VDC_ser)
 

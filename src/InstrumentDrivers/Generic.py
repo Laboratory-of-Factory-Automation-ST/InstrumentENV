@@ -8,6 +8,10 @@ class classproperty(property):
         return classmethod(self.fget).__get__(None, owner)()
 
 class Exceptable:
+
+    class Skip(Exception):
+        pass
+
     def __init__(self, context):
         self.__context = context
         self.__exception = None
