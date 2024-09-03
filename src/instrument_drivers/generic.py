@@ -7,7 +7,15 @@ class classproperty(property):
     def __get__(self, cls, owner):
         return classmethod(self.fget).__get__(None, owner)()
 
-class Exceptable:
+class ContextGuard:
+
+    class SkipContext:
+        def __enter__(self):
+            return self
+        
+        def __exit__(self, except_type, except_val, except_trace):
+            if isinstance(except_val, ContextGuard.Skip):
+                return True
 
     class Skip(Exception):
         def __init__(self, measurement_ref):
