@@ -6,7 +6,7 @@ Created on Mon Feb 12 16:15:53 2024
 """
 
 from pyvisa import ResourceManager
-from src.InstrumentDrivers.InstrumentConnection import InstrumentConnection
+from src.instrument_drivers.InstrumentConnection import InstrumentConnection
 import logging
 
 class InstrumentDiscovery:

@@ -10,7 +10,8 @@ class classproperty(property):
 class Exceptable:
 
     class Skip(Exception):
-        pass
+        def __init__(self, measurement_ref):
+            logging.warning(f"-> Skipping measurement { measurement_ref }")
 
     def __init__(self, context):
         self.__context = context

@@ -1,6 +1,6 @@
-from src.InstrumentDrivers.InstrumentConnection import InstrumentConnection
-from src.InstrumentDrivers.DAQ import Series, DAQ
-from src.InstrumentDrivers.Generic import classproperty
+from src.instrument_drivers.InstrumentConnection import InstrumentConnection
+from src.instrument_drivers.DAQ import Series, DAQ
+from src.instrument_drivers.generic import classproperty
 from enum import Enum, auto
 import logging
 
