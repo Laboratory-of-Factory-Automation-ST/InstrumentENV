@@ -55,11 +55,15 @@ def ips8200hq_out16a1_uvlo_convex_ramp(log_level: Config.LogLevel = Config.LogLe
     src_handle = ContextGuard(InstrumentConnection(ID.next_default_address, ID.connection_handler))
     with src_handle, CPX400DP(src_handle.evaluate()) as src:
         src.set_voltage(1, 12)
+        src.set_voltage(2, 3.3)
         time.sleep(10)
         src.out_on(1)
+        src.out_on(2)
         time.sleep(5)
         src.ramp_voltage(1, 12, 5)
         src.ramp_voltage(1, 5, 12)
+        time.sleep(5)
+        src.out_off(2)
         src.out_off(1)
 
 """
@@ -74,11 +78,15 @@ def ips8200_out16a1_uvlo_concave_ramp(log_level: Config.LogLevel = Config.LogLev
     src_handle = ContextGuard(InstrumentConnection(ID.next_default_address, ID.connection_handler))
     with src_handle, CPX400DP(src_handle.evaluate()) as src:
         src.set_voltage(1, 5)
+        src.set_voltage(2, 3.3)
         time.sleep(10)
         src.out_on(1)
+        src.out_on(2)
         time.sleep(5)
         src.ramp_voltage(1, 5, 12)
         src.ramp_voltage(1, 12, 5)
+        time.sleep(5)
+        src.out_off(2)
         src.out_off(1)
 
 """
