@@ -72,7 +72,7 @@ def ips8200hq_out16a1_uvlo_convex_ramp(init_hold_time, final_hold_time, log_leve
 Helper function for determination of UVLO function voltage thresholds
 and hysteresis by appluing concave triangular ramp
 """
-def ips8200_out16a1_uvlo_concave_ramp(init_hold_time, final_hold_time, log_level: Config.LogLevel = Config.LogLevel.INFO):
+def ips8200hq_out16a1_uvlo_concave_ramp(init_hold_time, final_hold_time, log_level: Config.LogLevel = Config.LogLevel.INFO):
     Config.SET_LOGLEVEL = log_level
     ID = InstrumentDiscovery()
     ID.default_addresses = CPX400DP.default_addresses
