@@ -1,5 +1,5 @@
 from src.instrument_drivers.InstrumentConnection import InstrumentConnection
-from src.instrument_drivers.DAQ import Series, DAQ
+# from src.instrument_drivers.daq import Series, DAQ
 from src.instrument_drivers.generic import classproperty
 from enum import Enum, auto
 import logging
@@ -21,7 +21,7 @@ class Instrument:
     def __init__(self, connection: InstrumentConnection, inst_type: InstrumentType, daq_ref: str = "DAQ Reference"):
         self.__connection = connection
         self.__inst_type = inst_type
-        self.__daq = {"daq_ref": Series(daq_ref)}
+        # self.__daq = {"daq_ref": Series(daq_ref)}
 
     @property
     def _connection(self):
@@ -38,10 +38,3 @@ class Instrument:
         logging.info("-> Remote lock released")
         self.stop()
         self.release()
-
-    def add_daq(self, daq_capture: DAQ.Capture):
-        match (daq_capture):
-            case DAQ.Capture.AC.Voltage:
-                pass
-            case _:
-                pass

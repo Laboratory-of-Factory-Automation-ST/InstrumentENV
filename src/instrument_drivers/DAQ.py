@@ -4,33 +4,102 @@ from pathlib import Path
 import csv
 import logging
 from enum import Enum, auto
+from src.instrument_drivers.InstrumentDiscovery import InstrumentDiscovery
+from src.instrument_drivers.InstrumentConnection import InstrumentConnection
+from src.instrument_drivers.DMM6500 import DMM6500
+from src.instrument_drivers.CPX400DP import CPX400DP
+import time
+import typing
 
 """
-Enumeration of possible captured measurements 
+Data acquisition composer class
 """
 class DAQ:
-    class Capture:
-        class CaptureEnum(Enum):
-            pass
+    class Mode:
+        POWER = None
+
+        def __new__(cls, *args, **kwargs):
+            obj = super(cls).__new__(cls)
+
+            match(type(cls)):
+                case DAQ.Power:
+                    cls.POWER = cls
+                case _:
+                    pass
+
+            return obj
+
+    class Power(Mode):
+        pass
+
+    class Params:
+        def __init__(self, voltage_band: tuple[int, int] = (0, 24), current_band: tuple[int, int] = (0, 0.5)):
+            self.__v_band = voltage_band
+            self.__i_band = current_band
+
+        @property
+        def current_band(self):
+            return self.__i_band
         
-        class AC(CaptureEnum):
-            Voltage = auto()
-            Current = auto()
-            Impedance = auto()
-            Period = auto()
-            Freq = auto()
+        @property
+        def current_limit(self):
+            return self.__i_band[1]
+        
+        @property
+        def voltage_band(self):
+            return self.__v_band
 
-        class DC(CaptureEnum):
-            Voltage = auto()
-            Current = auto()
-            Resistance = auto()
-            Capacitance = auto()
-            Inductance = auto()
-            PulsePeriod = auto()
-            PulseFreq = auto()
+    def __init__(self, discovery: InstrumentDiscovery):
+        self.__discovery = discovery
+
+    def __call__(self, mode: typing.Optional[Mode], params: Params):
+        match(type(mode)):
+            case self.Mode.POWER:
+                self.power(params)
+            case None:
+                pass
+
+    def __enter__(self):
+        return self
     
+    def __exit__(self, except_type, except_val, except_trace):
+        return
 
+    def power(self, params: Params, confirm_all: bool = False):
+        self.__discovery.default_addresses = DMM6500.default_addresses
+        dg1_con = InstrumentConnection(self.__discovery.next_default_address, self.__discovery.connection_handler)
+        dg2_con = InstrumentConnection(self.__discovery.next_default_address, self.__discovery.connection_handler)
+        self.__discovery.default_addresses = CPX400DP.default_addresses
+        src_con = InstrumentConnection(self.__discovery.next_default_address, self.__discovery.connection_handler)
 
+        dg1, dg2, src = None, None, None
+        with dg1_con, dg2_con, src_con:
+            dg1 = DMM6500(dg1_con)
+            dg2 = DMM6500(dg2_con)
+            src = CPX400DP(src_con)
+
+        volts = Series("v")
+        amps = Series("i")
+        watts = Series("p")
+        with dg1, dg2, src:
+            dg1.toggle_dcv_mode()
+            dg2.toggle_dci_mode()
+            if not confirm_all:
+                input("***\nDataloggers have been assigned the modes for this measurement.\nPlease make connections accordingly and press Enter to continue...\n***")
+
+            src.set_current(1, params.current_limit)
+            src.out_on(1)
+            for v in range(params.voltage_band[0] * 10, params.voltage_band[1] * 10 + 1):
+                src.set_voltage(1, v / 10)
+                time.sleep(50e-3)
+                volt = dg1.acquire_measurement()
+                amp = dg2.acquire_measurement()
+                volts.add_data_point(volt)
+                amps.add_data_point(amp)
+                watts.add_data_point(volt * amp)
+        with SeriesWriter(r"./src/measurements/power.csv") as writer:
+            writer.write(volts + amps + watts)
+    
 """ 
 Basic class for creating series of acquired data
 """

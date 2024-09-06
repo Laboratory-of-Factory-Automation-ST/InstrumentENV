@@ -1,7 +1,7 @@
 import logging
-from src.InstrumentDrivers.InstrumentDiscovery import InstrumentDiscovery
-from src.InstrumentDrivers.Instrument import Instrument
-from src.InstrumentDrivers.DMM6500 import DMM6500
+from src.instrument_drivers.InstrumentDiscovery import InstrumentDiscovery
+from src.instrument_drivers.Instrument import Instrument
+from src.instrument_drivers.DMM6500 import DMM6500
 import ipywidgets as widgets
 from IPython.display import display
 

@@ -1,6 +1,7 @@
-from src.InstrumentDrivers.InstrumentConnection import InstrumentConnection
-from src.InstrumentDrivers.Instrument import Instrument
-from src.InstrumentDrivers.Generic import classproperty
+from src.instrument_drivers.InstrumentConnection import InstrumentConnection
+from src.instrument_drivers.Instrument import Instrument
+from src.instrument_drivers.generic import classproperty
+import time
 
 class DMM6500(Instrument):
     @classproperty
