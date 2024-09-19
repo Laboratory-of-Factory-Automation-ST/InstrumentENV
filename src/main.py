@@ -14,4 +14,4 @@ Usage example:
 Please keep your custom main code on your private branches
 """
 with DAQ(InstrumentDiscovery()) as meas:
-    meas(DAQ.Mode.Power, DAQ.Params((0, 45),(0, 0.5)))
+    meas(DAQ.Mode.Power, DAQ.Params())
