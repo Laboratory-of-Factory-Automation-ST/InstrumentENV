@@ -4,33 +4,78 @@ from pathlib import Path
 import csv
 import logging
 from enum import Enum, auto
+from src.instrument_drivers.InstrumentDiscovery import InstrumentDiscovery
+from src.instrument_drivers.DMM6500 import DMM6500
+from src.instrument_drivers.CPX400DP import CPX400DP
+import time
+import typing
 
 """
-Enumeration of possible captured measurements 
+Data acquisition composer class
 """
 class DAQ:
-    class Capture:
-        class CaptureEnum(Enum):
-            pass
+    class Mode(Enum):
+        Power = auto()
+
+    class Params:
+        def __init__(self, voltage_range: tuple[int, int] = (0, 24), current_range: tuple[int, int] = (0, 0.5)):
+            self.__v_range = voltage_range
+            self.__i_range = current_range
+
+        @property
+        def current_range(self):
+            return self.__i_range
         
-        class AC(CaptureEnum):
-            Voltage = auto()
-            Current = auto()
-            Impedance = auto()
-            Period = auto()
-            Freq = auto()
+        @property
+        def current_limit(self):
+            return self.__i_range[1]
+        
+        @property
+        def voltage_range(self):
+            return self.__v_range
 
-        class DC(CaptureEnum):
-            Voltage = auto()
-            Current = auto()
-            Resistance = auto()
-            Capacitance = auto()
-            Inductance = auto()
-            PulsePeriod = auto()
-            PulseFreq = auto()
+    def __init__(self, discovery: InstrumentDiscovery):
+        self.__discovery = discovery
+
+    def __call__(self, mode: typing.Optional[Mode], params: Params):
+        match(mode):
+            case self.Mode.Power:
+                self.power(params)
+            case None:
+                pass
+
+    def __enter__(self):
+        return self
     
+    def __exit__(self, except_type, except_val, except_trace):
+        return
 
+    def power(self, params: Params):
+        ammeter: DMM6500
+        voltmeter_con, voltmeter = self.__discovery.allocate(DMM6500, DMM6500.Mode.DCVMeter)
+        voltmeter: DMM6500
+        ammeter_con, ammeter = self.__discovery.allocate(DMM6500, DMM6500.Mode.DCAMeter)
+        src: CPX400DP
+        src_con, src = self.__discovery.allocate(CPX400DP, CPX400DP.Mode.Default, False)
 
+        volts = Series("v")
+        amps = Series("i")
+        watts = Series("p")
+        with voltmeter_con, ammeter_con, src_con, voltmeter, ammeter, src:
+            src.set_current(1, params.current_limit)
+            src.set_voltage(1, params.voltage_range[0])
+            src.out_on(1)
+            for v in range(params.voltage_range[0] * 10, params.voltage_range[1] * 10 + 1):
+                src.set_voltage(1, v / 10)
+                time.sleep(50e-3)
+                volt = voltmeter.acquire_measurement()
+                amp = ammeter.acquire_measurement()
+                volts.add_data_point(volt)
+                amps.add_data_point(amp)
+                watts.add_data_point(float(volt) * float(amp))
+        with SeriesWriter(r"./src/measurements/power.csv") as writer:
+            writer.write(volts + amps + watts)
+    
 """ 
 Basic class for creating series of acquired data
 """

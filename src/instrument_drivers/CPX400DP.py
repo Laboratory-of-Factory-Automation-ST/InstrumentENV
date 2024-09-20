@@ -13,14 +13,14 @@ import time
 class CPX400DP(Instrument):
     @classproperty
     def default_addresses(cls):
-        instrument_refs = set()
-        instrument_refs.add("ASRL4::INSTR")
-        instrument_refs.add("ASRL11::INSTR")
-        for ref in instrument_refs:
-            yield ref
+        addresses = set()
+        addresses.add("ASRL4::INSTR")
+        addresses.add("ASRL11::INSTR")
+        
+        return addresses
 
-    def __init__(self, connection: InstrumentConnection, daq_reference: str = "CPX400DP"):
-        super().__init__(connection, Instrument.Type.PowerSupply, daq_reference)
+    def __init__(self, connection: InstrumentConnection, mode):
+        super().__init__(connection, Instrument.Mode.Default)
 
     def release(self):
         self._connection.send("LOCAL")

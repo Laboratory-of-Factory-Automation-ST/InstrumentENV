@@ -7,7 +7,9 @@ Created on Mon Feb 12 16:15:53 2024
 
 from pyvisa import ResourceManager
 from src.instrument_drivers.InstrumentConnection import InstrumentConnection
+from src.instrument_drivers.Instrument import Instrument
 import logging
+from msvcrt import getch
 
 class InstrumentDiscovery:
 
@@ -16,7 +18,8 @@ class InstrumentDiscovery:
         self.__discovered = list(self.__resources.list_resources())
         self.__handshakes = dict()
         self.get_handshakes()
-        self.__default_addresses = None
+        self.__default_addresses = set()
+        self.__allocated = []
 
     def __del__(self):
         logging.info("-> Resources successfully released")
@@ -24,6 +27,10 @@ class InstrumentDiscovery:
 
     def __iter__(self):
         return self
+    
+    @property
+    def connection_handler(self):
+        return self.__resources
     
     @property
     def next_default_address(self):
@@ -53,7 +60,7 @@ class InstrumentDiscovery:
         for idx, addr in enumerate(self.__discovered):
             with InstrumentConnection(addr, self.__resources) as con:
                 try:
-                    inst_name = con.send_query("*IDN?", 1e-3)
+                    inst_name = con.handshake()
                     logging.info(f"-> [{ str(idx) }] { addr } { inst_name }\n")
                     self.__handshakes[addr] = inst_name
                 except:
@@ -64,7 +71,27 @@ class InstrumentDiscovery:
             return self.__discovered[idx]
         except:
             logging.warning("-> Instrument was not found")
-    
-    @property
-    def connection_handler(self):
-        return self.__resources
+
+    def allocate(self, instrument: Instrument, mode, interactive = True):
+        if instrument.default_addresses != self.default_addresses:
+            self.__allocated = []
+            self.default_addresses = instrument.default_addresses
+        for addr in (addr for addr in self.default_addresses if addr not in self.__allocated):
+            connection = InstrumentConnection(addr, self.__resources)
+            instrument_alloc: Instrument
+            instrument_alloc = instrument(connection, mode)
+            if not interactive:
+                self.__allocated.append(addr)
+                return connection, instrument_alloc
+            with connection, instrument_alloc:
+                print("\n\tOne instrument was switched to remote operation and was assigned a mode for this measurement")
+                print("\tIf you wish to migrate the mode to different instrument press Space")
+                print("\tTo confirm current mode allocation press Enter\n")
+                usr_ctrl = getch()
+                if usr_ctrl == b' ':
+                    continue
+                else:
+                    self.__allocated.append(addr)
+                    return connection, instrument_alloc
+        raise LookupError("Allocation ran out of the address pool")
+                

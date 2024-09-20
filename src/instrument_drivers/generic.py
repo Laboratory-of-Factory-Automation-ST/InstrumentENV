@@ -88,3 +88,4 @@ class Config(object, metaclass=LogConfig):
 
     def __del__(cls):
         sys.stderr = cls.__STDERR
+        
