@@ -26,9 +26,14 @@ class InstrumentConnection:
     def __exit__(self, except_type, except_val, except_trace):
         try:
             self.__connection.close()
+            self.__connection = None
             logging.info("-> Connection to instrument closed")
         except:
             logging.warning("-> Connection could not be closed or is not open")
+
+    @property
+    def is_open(self):
+        return self.__connection is not None
 
     def send(self, cmd):
         try:
@@ -41,3 +46,6 @@ class InstrumentConnection:
             return self.__connection.query(query, await_time)
         except:
             logging.error("-> Communication with instrument was unsuccessful")
+
+    def handshake(self):
+        return self.send_query('*IDN?', 1e-3)
