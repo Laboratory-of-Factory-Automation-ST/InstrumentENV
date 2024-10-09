@@ -72,11 +72,11 @@ class InstrumentDiscovery:
         except:
             logging.warning("-> Instrument was not found")
 
-    def allocate(self, instrument: Instrument, mode, interactive = True):
+    def allocate(self, instrument: Instrument, mode = "default", interactive = True):
         if instrument.default_addresses != self.default_addresses:
             self.__allocated = []
             self.default_addresses = instrument.default_addresses
-        for addr in (addr for addr in self.default_addresses if addr not in self.__allocated):
+        for addr in (addr for addr in self.default_addresses if (addr not in self.__allocated and addr in self.__handshakes)):
             connection = InstrumentConnection(addr, self.__resources)
             instrument_alloc: Instrument
             instrument_alloc = instrument(connection, mode)
@@ -84,9 +84,9 @@ class InstrumentDiscovery:
                 self.__allocated.append(addr)
                 return connection, instrument_alloc
             with connection, instrument_alloc:
-                print("\n\tOne instrument was switched to remote operation and was assigned a mode for this measurement")
+                print("\n\tOne instrument was switched to remote operation and was assigned a mode for present measurement")
                 print("\tIf you wish to migrate the mode to different instrument press Space")
-                print("\tTo confirm current mode allocation press Enter\n")
+                print("\tTo confirm the mode allocation press Enter\n")
                 usr_ctrl = getch()
                 if usr_ctrl == b' ':
                     continue
