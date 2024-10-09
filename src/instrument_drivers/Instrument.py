@@ -21,6 +21,7 @@ class Instrument:
         self.__connection = connection
         self.__mode = mode
         self.__fallback_mode = None
+        self.__channel_reference = None
         self.__set_enum_defaults(self.Mode)
         self.__set_enum_defaults(self.ChanRef)
            
@@ -49,6 +50,10 @@ class Instrument:
     def fallback_mode(self):
         return self.__fallback_mode
     
+    @property
+    def channel_reference(self):
+        return self.__channel_reference
+    
     @mode.setter
     def mode(self, mode: Mode):
         self.__mode = mode
@@ -56,6 +61,10 @@ class Instrument:
     @fallback_mode.setter
     def fallback_mode(self, mode: Mode):
         self.__fallback_mode = mode
+
+    @channel_reference.setter
+    def channel_reference(self, chan_ref):
+        self.__channel_reference = chan_ref
 
     def __set_enum_defaults(self, base_enum: StrEnum):
         enum_dict = { i.name : i.value for i in base_enum }

@@ -38,11 +38,13 @@ class DMM6500(Instrument):
         super().__init__(connection, mode)
 
     def __call__(self, chan_ref: ChanRef, mode: Mode):
+        self.release()
+        self.fallback_mode = self.mode if self.fallback_mode is None else self.fallback_mode
         channel = copy(self)
-        self.fallback_mode = self.mode
+        channel.fallback_mode = None
+        channel.channel_reference = chan_ref
         mode_ctrl = f'{self.MODE_CTRL_CMD} "{mode}", (@{chan_ref})'
         self._connection.send(mode_ctrl)
-        self._connection.send('ROUT:OPEN (@ALLSLOTS)')
         self._connection.send(f'ROUT:CLOS (@{ chan_ref })')
         self.assert_mode(mode)
 
@@ -95,6 +97,9 @@ class DMM6500(Instrument):
         if self.fallback_mode != None:
             self.release()
             self.mode = self.fallback_mode
+        if self.channel_reference != None:
+            self.release()
+            self._connection.send(f'ROUT:CLOS (@{ self.channel_reference })')
         meas_val = self._connection.send_query(':MEAS?', 1e-3)
         if flush:
             self._connection.send(':TRAC:CLE')

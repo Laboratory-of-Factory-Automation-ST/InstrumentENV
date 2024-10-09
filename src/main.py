@@ -25,7 +25,9 @@ with dmm_con, dmm:
     dmm: DMM6500
     # call a channel of the instrument
     chan2 = dmm(2, DMM6500.Mode.DCVMeter)
+    chan3 = dmm(3, DMM6500.Mode.R2PoleMeter)
     # make measurement from the channel
     print(chan2.acquire_measurement())
+    print(chan3.acquire_measurement())
     # make measurement from the instrument disconnects channels and reverts to last mode
     dmm.acquire_measurement()
