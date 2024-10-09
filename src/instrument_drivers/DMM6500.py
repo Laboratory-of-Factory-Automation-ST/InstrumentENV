@@ -1,7 +1,8 @@
+from __future__ import annotations
 from src.instrument_drivers.InstrumentConnection import InstrumentConnection
 from src.instrument_drivers.Instrument import Instrument
 from src.instrument_drivers.generic import classproperty
-from enum import StrEnum
+from copy import copy
 
 class DMM6500(Instrument):
     MODE_CTRL_CMD = ":SENS:FUNC"
@@ -36,6 +37,17 @@ class DMM6500(Instrument):
     def __init__(self, connection: InstrumentConnection, mode: Mode):
         super().__init__(connection, mode)
 
+    def __call__(self, chan_ref: ChanRef, mode: Mode):
+        channel = copy(self)
+        self.fallback_mode = self.mode
+        mode_ctrl = f'{self.MODE_CTRL_CMD} "{mode}", (@{chan_ref})'
+        self._connection.send(mode_ctrl)
+        self._connection.send('ROUT:OPEN (@ALLSLOTS)')
+        self._connection.send(f'ROUT:CLOS (@{ chan_ref })')
+        self.assert_mode(mode)
+
+        return channel
+
     @property
     def mode(self):
         query = self._connection.send_query(':SENS:FUNC?', 10e-3)
@@ -51,6 +63,7 @@ class DMM6500(Instrument):
             self.assert_mode(mode)
 
     def release(self):
+        self._connection.send('ROUT:OPEN (@ALLSLOTS)')
         self._connection.send('TRIG:CONT REST')
 
     def stop(self):
@@ -78,10 +91,10 @@ class DMM6500(Instrument):
     def set_i_range(self, range):
         self._connection.send(':SENS:CURR:RANG ' + str(range))
 
-    def route_channel(self, ref: ChanRef):
-        self._connection.send(f'ROUT:CLOS (@{ ref })')
-
     def acquire_measurement(self, flush = True):
+        if self.fallback_mode != None:
+            self.release()
+            self.mode = self.fallback_mode
         meas_val = self._connection.send_query(':MEAS?', 1e-3)
         if flush:
             self._connection.send(':TRAC:CLE')

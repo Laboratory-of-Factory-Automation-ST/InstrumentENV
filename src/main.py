@@ -16,16 +16,16 @@ Usage example:
 Please keep your custom main code on your private branches
 """
 
-Config.SET_LOGLEVEL = Config.LogLevel.DEBUG
-
 ID = InstrumentDiscovery()
+
+# allocate generic instruments of given type
 dmm_con, dmm = ID.allocate(DMM6500, interactive = False)
 with dmm_con, dmm:
-    chan2 = dmm(DMM6500.Mode.DCVMeter, 2)
-    with chan2:
-        print(chan2.acquire_measurement())
-
-exit()
-
-with DAQ(InstrumentDiscovery()) as meas:
-    meas(DAQ.Mode.Power, DAQ.Params((0, 50),(0, 0.01)))
+    # type cast generic instrument to the correct internal type
+    dmm: DMM6500
+    # call a channel of the instrument
+    chan2 = dmm(2, DMM6500.Mode.DCVMeter)
+    # make measurement from the channel
+    print(chan2.acquire_measurement())
+    # make measurement from the instrument disconnects channels and reverts to last mode
+    dmm.acquire_measurement()
