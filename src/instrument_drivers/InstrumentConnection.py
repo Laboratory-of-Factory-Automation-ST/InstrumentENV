@@ -1,5 +1,6 @@
 from pyvisa import ResourceManager
 import logging
+from time import sleep
 
 class InstrumentConnection:
     def __init__(self, address, handler: ResourceManager, baudrate = 9600, timeout = 1000, r_terminator = '\n', w_terminator = '\n'):
@@ -35,14 +36,16 @@ class InstrumentConnection:
     def is_open(self):
         return self.__connection is not None
 
-    def send(self, cmd):
+    def send(self, cmd, delay = 100e-3):
         try:
+            sleep(delay)
             self.__connection.write(cmd)
         except:
             logging.error("-> Communication with instrument was unsuccessful")
 
-    def send_query(self, query, await_time):
+    def send_query(self, query, await_time, delay = 100e-3):
         try:
+            sleep(delay)
             return self.__connection.query(query, await_time)
         except:
             logging.error("-> Communication with instrument was unsuccessful")
