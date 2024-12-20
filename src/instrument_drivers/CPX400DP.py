@@ -19,8 +19,8 @@ class CPX400DP(Instrument):
         
         return addresses
 
-    def __init__(self, connection: InstrumentConnection, mode):
-        super().__init__(connection, Instrument.Mode.Default)
+    def __init__(self, connection: InstrumentConnection):
+        super().__init__(connection)
 
     def release(self):
         self._connection.send("LOCAL")

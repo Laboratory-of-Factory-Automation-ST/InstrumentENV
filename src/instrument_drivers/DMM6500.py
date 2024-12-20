@@ -69,7 +69,7 @@ class DMM6500(Instrument):
         self._connection.send('TRIG:CONT REST')
 
     def stop(self):
-        self.reset()
+        pass
     
     def toggle_dcv_mode(self):
         self._connection.send(':SENS:FUNC "VOLT:DC"')
