@@ -61,10 +61,10 @@ class InstrumentDiscovery:
             with InstrumentConnection(addr, self.__resources) as con:
                 try:
                     inst_name = con.handshake()
-                    logging.info(f"-> [{ str(idx) }] { addr } { inst_name }\n")
+                    logging.info(f"-> [{ str(idx) }] { addr } { inst_name }")
                     self.__handshakes[addr] = inst_name
                 except:
-                    logging.warning(f"[{ str(idx) }] { addr } DISCOVERED RESOURCE TIMED OUT\n")
+                    logging.warning(f"[{ str(idx) }] { addr } DISCOVERED RESOURCE TIMED OUT")
 
     def get_instrument_address(self, idx):
         try:
