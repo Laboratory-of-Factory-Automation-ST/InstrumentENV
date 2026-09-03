@@ -20,7 +20,7 @@ class InstrumentConnection:
             self.__connection.baudrate = self.__baudrate
             self.__connection.timeout = self.__timeout
         except Exception as e:
-            logging.error("-> Connection to instrument was unsuccessful")
+            logging.error(f"-> Connection to instrument was unsuccessful @ {self.__address}")
             raise e
         return self
 
@@ -28,9 +28,9 @@ class InstrumentConnection:
         try:
             self.__connection.close()
             self.__connection = None
-            logging.info("-> Connection to instrument closed")
+            logging.info(f"-> Connection to instrument closed @ {self.__address}")
         except:
-            logging.warning("-> Connection could not be closed or is not open")
+            logging.warning(f"-> Connection could not be closed or is not open @ {self.__address}")
 
     @property
     def is_open(self):
@@ -41,14 +41,14 @@ class InstrumentConnection:
             sleep(delay)
             self.__connection.write(cmd)
         except:
-            logging.error("-> Communication with instrument was unsuccessful")
+            logging.error(f"-> Communication with instrument was unsuccessful @ {self.__address}")
 
     def send_query(self, query, await_time, delay = 100e-3):
         try:
             sleep(delay)
             return self.__connection.query(query, await_time)
         except:
-            logging.error("-> Communication with instrument was unsuccessful")
+            logging.error(f"-> Communication with instrument was unsuccessful @ {self.__address}")
 
     def handshake(self):
         return self.send_query('*IDN?', 1e-3)

@@ -46,6 +46,7 @@ class ContextGuard:
     
     def evaluate(self):
         if isinstance(self.exception, Exception):
+            print(self.exception)
             raise self.exception
         else:
             return self.context
@@ -62,15 +63,15 @@ class LogConfig(type):
         logging.getLogger().setLevel(level=lvl.value)
         match lvl:
             case cls.LogLevel.DEBUG:
-                logging.debug("\n")
+                logging.debug("")
             case cls.LogLevel.INFO:
-                logging.info("\n")
+                logging.info("")
             case cls.LogLevel.WARNING:
-                logging.warning("\n")
+                logging.warning("")
             case cls.LogLevel.ERROR:
-                logging.error("\n")
+                logging.error("")
             case cls.LogLevel.CRITICAL:
-                logging.critical("\n")
+                logging.critical("")
     def __set_stream(cls, stream: StringIO):
         logging.basicConfig(stream=stream)
     

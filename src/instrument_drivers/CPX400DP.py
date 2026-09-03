@@ -16,6 +16,7 @@ class CPX400DP(Instrument):
         addresses = set()
         addresses.add("ASRL4::INSTR")
         addresses.add("ASRL11::INSTR")
+        addresses.add("TCPIP0::10.138.44.233::inst0::INSTR")
         
         return addresses
 
@@ -46,13 +47,13 @@ class CPX400DP(Instrument):
         time.sleep(blanking_time)
         self.__read_lim_status_reg_raw(channel)
         self._connection.send("OP" + str(channel) + " 1")
-        logging.info("-> Switching OUT" + str(channel) + " on")
+        logging.info("-> Switching OUT" + str(channel) + " on" + " @ CPX400DP")
         #self.report_lim_status(channel)
 
     def out_off(self, channel, blanking_time = 1):
         time.sleep(blanking_time)
         self._connection.send("OP" + str(channel) + " 0")
-        logging.info("-> Switching OUT" + str(channel) + " off")
+        logging.info("-> Switching OUT" + str(channel) + " off" + " @ CPX400DP")
         #self.report_lim_status(channel)
 
     def out_status(self, channel):

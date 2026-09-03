@@ -4,6 +4,9 @@ Created on Thu Feb 15 12:45:09 2024
 
 @author: marek novotny
 """
+from src.environment import EnvInit
+EnvInit()
+
 from src.product_scripts import ips8200hq
 
 """

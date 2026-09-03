@@ -33,10 +33,10 @@ class Instrument:
         return self
     
     def __exit__(self, except_type, except_val, except_trace):
-        logging.info("-> Remote lock released")
         self.stop()
         self.reset()
         self.release()
+        logging.info(f"-> Remote lock released @ {self.__class__.__name__}")
 
     @property
     def _connection(self):
